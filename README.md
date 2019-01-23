@@ -24,3 +24,10 @@ For Arch Linux you will need the following packages: `perl-dbd-sqlite` (which al
 You need to clone the lyrics repo into the folder above lyrics-api.
 
 Then you can run `perl lyrics-to-sqlite.pl` to generate the database.
+
+After the database is generated, you can try searching for Six Shooter by Coyote Kisses via `REQUEST_METHOD="GET" QUERY_STRING="title=six shooter&album=six shooter&artist=coyote kissesz" perl search.pl`
+Using only partial information like 'artist=coyote' will also get you a result, as the search method is quite flexible.
+
+Now you may want to set up a webserver, the example will use nginx:
+
+TODO
