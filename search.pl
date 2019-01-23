@@ -18,13 +18,11 @@
 
 use strict;
 use DBI;
-use File::Basename;
 use CGI;
 use XML::LibXML;
 use XML::LibXSLT;
 
 my $database = "lyrics.db";
-my $dirname  = "database";
 my $namespace = "urn:x-lyrics";
 
 sub fts5_condition {
