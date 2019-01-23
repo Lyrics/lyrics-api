@@ -14,3 +14,13 @@ and searchable in ways other than direct file reading:
 It's not stable yet, but the intention is to get a stable database
 schema, as well as a stable and specified schema of documents served
 by the web API.
+
+## Setup
+
+You will need to install a few perl packages to get the scripts running.
+
+For Arch Linux you will need the following packages: `perl-dbd-sqlite` (which also pulls the needed `perl-dbi`), `perl-cgi`, `perl-xml-libxml` and `perl-xml-libxslt`.
+
+You need to clone the lyrics repo into the folder above lyrics-api.
+
+Then you can run `perl lyrics-to-sqlite.pl` to generate the database.
