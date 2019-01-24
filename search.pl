@@ -21,9 +21,17 @@ use DBI;
 use CGI;
 use XML::LibXML;
 use XML::LibXSLT;
+use Getopt::Long;
 
-my $database = "lyrics.db";
 my $namespace = "urn:x-lyrics";
+my $search_template = "search.xsl";
+die "Usage: search.pl <sqlite db file> <options>"
+    unless ($#ARGV >= 0);
+my $database = shift @ARGV;
+
+# TODO: add --help, --version, etc.
+GetOptions ("search-template=s" => \$search_template)
+    or die("Error in command line arguments");
 
 sub fts5_condition {
     my ($column, $query) = @_;
@@ -105,7 +113,7 @@ if ($artist || $album || $title) {
 
     # Apply a template
     my $xslt = XML::LibXSLT->new();
-    my $template = XML::LibXML->load_xml(location=>'search.xsl');
+    my $template = XML::LibXML->load_xml(location => $search_template);
     my $stylesheet = $xslt->parse_stylesheet($template);
     my $result = $stylesheet->transform($doc);
 

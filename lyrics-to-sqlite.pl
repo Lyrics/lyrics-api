@@ -20,8 +20,12 @@ use strict;
 use DBI;
 use File::Basename;
 
-my $database = "lyrics.db";
-my $dirname  = "../lyrics/database";
+die "Usage: lyrics-to-sqlite.pl <database directory> <sqlite db file>"
+    unless ($#ARGV >= 1);
+my $dirname = shift @ARGV;
+my $database = shift @ARGV;
+
+die "The database file already exists" if (-f $database);
 
 my $dbh = DBI->connect("DBI:SQLite:dbname=$database", "", "")
     or die $DBI::errstr;
