@@ -25,9 +25,10 @@ use Getopt::Long;
 
 my $namespace = "urn:x-lyrics";
 my $search_template = "search.xsl";
-die "Usage: search.pl <sqlite db file> <options>"
-    unless ($#ARGV >= 0);
-my $database = shift @ARGV;
+my $database = $ENV{"LYRICS_DB"};
+
+die "The LYRICS_DB environment variable is not set"
+    unless ($database);
 
 # TODO: add --help, --version, etc.
 GetOptions ("search-template=s" => \$search_template)
