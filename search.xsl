@@ -6,7 +6,7 @@
                 xmlns:mo="http://purl.org/ontology/mo/"
                 xmlns="http://www.w3.org/1999/xhtml"
                 version="1.0">
-  <xsl:output method="xml"/>
+  <xsl:output method="xml" encoding="UTF-8" />
 
   <xsl:template match="/lyrics:songs">
     <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html&gt;</xsl:text>
