@@ -23,6 +23,7 @@ use XML::LibXML;
 use XML::LibXSLT;
 use Getopt::Long;
 use 5.010;
+use preprocessing;
 
 my $namespace = "urn:x-lyrics";
 my $search_template = "search.xsl";
@@ -34,30 +35,6 @@ die "The LYRICS_DB environment variable is not set"
 # TODO: add --help, --version, etc.
 GetOptions ("search-template=s" => \$search_template)
     or die("Error in command line arguments");
-
-sub fts5_condition {
-    my ($column, $query) = @_;
-    # Escape double quotes in the query. Not great, but regular query
-    # templates only escape it for SQL, not for FTS5 queries, and
-    # there doesn't seem to be a function to escape those.
-    $query =~ s/"/""/g;
-    my @words = split / /, $query;
-    my @pieces;
-    while (@words) {
-        push @pieces, $column . ' : ^"' . (join " ", @words) . '"';
-        pop @words;
-    }
-    return ("(" . (join " OR ", @pieces) . ")");
-}
-
-sub fts5_query {
-    my ($artist, $album, $song) = @_;
-    my @pieces;
-    push @pieces, fts5_condition "artist", $artist if $artist;
-    push @pieces, fts5_condition "album", $album if $album;
-    push @pieces, fts5_condition "title", $song if $song;
-    return ("(" . (join " AND ", @pieces) . ")");
-}
 
 sub song_element {
     my ($doc, $artist, $album, $title, $lyrics) = @_;
@@ -91,15 +68,26 @@ if ($artist || $album || $title) {
     my $dbh = DBI->connect("DBI:SQLite:dbname=$database", "", "")
         or die $DBI::errstr;
 
+    my @conditions;
+    my @parameters;
+    if ($artist) {
+        push @conditions, "search_artist = ?";
+        push @parameters, preprocess($artist);
+    }
+    if ($album) {
+        push @conditions, "search_album = ?";
+        push @parameters, preprocess($album);
+    }
+    if ($title) {
+        push @conditions, "search_title = ?";
+        push @parameters, preprocess($title);
+    }
+
     my $sth = $dbh->prepare(
-        q(
-        select artist,album,title,text
-        from lyrics
-        where lyrics match ?
-        order by rank
-        limit 10
-        ));
-    my $rv = $sth->execute(fts5_query $artist, $album, $title)
+        "select artist,album,title,text from lyrics where " .
+        join(" and ", @conditions) .
+        " limit 10");
+    my $rv = $sth->execute(@parameters)
         or die $DBI::errstr;
 
     # Compose an XML document out of the query results
@@ -110,9 +98,7 @@ if ($artist || $album || $title) {
         $songs->appendChild(song_element($doc, @row));
     }
 
-    # Disconnect is commented out, since it leads to a segfault with a
-    # new sqlite library and an old perl module.
-    # $dbh->disconnect();
+    $dbh->disconnect();
 
     # Respond depending on requested format.
     given ($format) {

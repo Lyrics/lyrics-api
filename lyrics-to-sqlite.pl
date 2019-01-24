@@ -19,6 +19,7 @@
 use strict;
 use DBI;
 use File::Basename;
+use preprocessing;
 
 die "Usage: lyrics-to-sqlite.pl <database directory> <sqlite db file>"
     unless ($#ARGV >= 1);
@@ -31,16 +32,30 @@ my $dbh = DBI->connect("DBI:SQLite:dbname=$database", "", "")
     or die $DBI::errstr;
 
 $dbh->do(q(
-         CREATE VIRTUAL TABLE lyrics
-         USING fts5(artist, album, title, text UNINDEXED)));
-my $insert_q = $dbh->prepare("INSERT INTO lyrics VALUES (?, ?, ?, ?)");
+         CREATE TABLE lyrics (
+         search_artist text NOT NULL,
+         search_album text NOT NULL,
+         search_title text NOT NULL,
+         artist text NOT NULL,
+         album text NOT NULL,
+         title text NOT NULL,
+         text text NOT NULL
+         )));
+my $insert_q = $dbh->prepare("INSERT INTO lyrics VALUES (?, ?, ?, ?, ?, ?, ?)");
 
 for my $path (glob("$dirname/*/*/*/*")) {
     my $song = basename $path;
     my $album = basename(dirname $path);
     my $artist = basename(dirname(dirname $path));
     my $lyrics = do { local( @ARGV, $/ ) = $path; <> };
-    $insert_q->execute($artist, $album, $song, $lyrics);
+    $insert_q->execute(preprocess($artist), preprocess($album),
+                       preprocess($song), $artist, $album, $song, $lyrics);
 }
 
-# $dbh->disconnect();
+$dbh->do("CREATE INDEX idx_artist on lyrics (search_artist)");
+$dbh->do("CREATE INDEX idx_album on lyrics (search_album)");
+$dbh->do("CREATE INDEX idx_title on lyrics (search_title)");
+# compound indexes (add more?)
+$dbh->do("CREATE INDEX idx_artist_title on lyrics (search_artist, search_title)");
+
+$dbh->disconnect();
