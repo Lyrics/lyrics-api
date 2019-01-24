@@ -22,6 +22,7 @@ use CGI;
 use XML::LibXML;
 use XML::LibXSLT;
 use Getopt::Long;
+use 5.010;
 
 my $namespace = "urn:x-lyrics";
 my $search_template = "search.xsl";
@@ -81,6 +82,7 @@ my $q = CGI->new;
 my $artist = $q->param('artist');
 my $album = $q->param('album');
 my $title = $q->param('title');
+my $format = $q->param('format');
 
 if ($artist || $album || $title) {
     # TODO: would be nice to open the database in read-only mode.
@@ -112,15 +114,25 @@ if ($artist || $album || $title) {
     # new sqlite library and an old perl module.
     # $dbh->disconnect();
 
-    # Apply a template
-    my $xslt = XML::LibXSLT->new();
-    my $template = XML::LibXML->load_xml(location => $search_template);
-    my $stylesheet = $xslt->parse_stylesheet($template);
-    my $result = $stylesheet->transform($doc);
+    # Respond depending on requested format.
+    given ($format) {
+        when ($_ eq "xml") {
+            print $q->header(
+                -type=>'application/xml',
+                -charset=>'utf-8');
+            print $doc->toString();
+        };
+        default {
+            # Apply a template
+            my $xslt = XML::LibXSLT->new();
+            my $template = XML::LibXML->load_xml(location => $search_template);
+            my $stylesheet = $xslt->parse_stylesheet($template);
+            my $result = $stylesheet->transform($doc);
 
-    # Respond
-    print $q->header(
-        -type=>'application/xhtml+xml',
-        -charset=>'utf-8');
-    print $result->toString();
+            print $q->header(
+                -type=>'application/xhtml+xml',
+                -charset=>'utf-8');
+            print $result->toString();
+        };
+    }
 }
