@@ -21,9 +21,9 @@ our @EXPORT_OK = ('preprocess');
 sub preprocess {
     my $str = shift @_;
     # remove trailing marks
-    $str =~ s/(\(|feat.|ft.).*$//g;
-    # trim
-    $str =~ s/\s+$|^\s+//g;
+    $str =~ s/(\(|feat\.|ft\.).*$//g;
+    # filter alphanumeric characters
+    $str =~ s/[^\p{Alpha}\p{Number}]//g;
     # encode as ASCII, lower-case
     return lc(unidecode $str);
 }
