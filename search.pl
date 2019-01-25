@@ -60,6 +60,7 @@ my $artist = $q->param('artist');
 my $album = $q->param('album');
 my $title = $q->param('title');
 my $format = $q->param('format');
+my $errors = $q->param('errors');
 
 if ($artist || $album || $title) {
     # TODO: would be nice to open the database in read-only mode.
@@ -99,6 +100,11 @@ if ($artist || $album || $title) {
     }
 
     $dbh->disconnect();
+
+    if (! $songs->hasChildNodes() && $errors) {
+        print $q->header(-status=>'404 Not Found');
+        exit;
+    }
 
     # Respond depending on requested format.
     given ($format) {
