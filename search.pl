@@ -28,13 +28,10 @@ use preprocessing;
 my $namespace = "urn:x-lyrics";
 my $search_template = "search.xsl";
 my $database = $ENV{"LYRICS_DB"};
+my $xslt_dir = ($ENV{"XSLT_DIR"} or ".");
 
 die "The LYRICS_DB environment variable is not set"
     unless ($database);
-
-# TODO: add --help, --version, etc.
-GetOptions ("search-template=s" => \$search_template)
-    or die("Error in command line arguments");
 
 sub song_element {
     my ($doc, $artist, $album, $title, $lyrics) = @_;
@@ -101,30 +98,34 @@ if ($artist || $album || $title) {
 
     $dbh->disconnect();
 
+    # Return an error if it's requested to do so when nothing is
+    # found.
     if (! $songs->hasChildNodes() && $errors) {
         print $q->header(-status=>'404 Not Found');
         exit;
     }
 
     # Respond depending on requested format.
-    given ($format) {
-        when ($_ eq "xml") {
-            print $q->header(
-                -type=>'application/xml',
-                -charset=>'utf-8');
-            print $doc->toString();
-        };
-        default {
-            # Apply a template
-            my $xslt = XML::LibXSLT->new();
-            my $template = XML::LibXML->load_xml(location => $search_template);
-            my $stylesheet = $xslt->parse_stylesheet($template);
-            my $result = $stylesheet->transform($doc);
+    if ($format eq "xml") { # Serve plain XML
+        print $q->header(-type=>'application/xml', -charset=>'utf-8');
+        print $doc->toString();
+    } else { # Transform using an XSL file
+        $format =~ s/[^a-z\.-]//g;
+        my $xslt_path = "$xslt_dir/$format.xsl";
 
-            print $q->header(
-                -type=>'application/xhtml+xml',
-                -charset=>'utf-8');
-            print $result->toString();
-        };
+        # Default to search.xsl if no file is found
+        if (! -f $xslt_path) {
+            $xslt_path = "$xslt_dir/search.xsl";
+        }
+
+        # Apply a template
+        my $xslt = XML::LibXSLT->new();
+        my $template = XML::LibXML->load_xml(location => $xslt_path);
+        my $stylesheet = $xslt->parse_stylesheet($template);
+        my $result = $stylesheet->transform($doc);
+
+        print $q->header(-type=>'application/xhtml+xml',
+                         -charset=>'utf-8');
+        print $result->toString();
     }
 }
