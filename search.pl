@@ -85,8 +85,9 @@ if ($artist || $album || $title) {
     }
 
     my $sth = $dbh->prepare(
-        "select artist,album,title,text from lyrics where " .
-        join(" and ", @conditions));
+        "select artist, album, title, text from lyrics where " .
+        join(" and ", @conditions) .
+        " order by artist, album, title");
     my $rv = $sth->execute(@parameters)
         or die $DBI::errstr;
 
