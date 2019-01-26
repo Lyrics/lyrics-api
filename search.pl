@@ -26,7 +26,6 @@ use URI::Escape;
 use preprocessing;
 
 my $namespace = "urn:x-lyrics";
-my $search_template = "search.xsl";
 my $database = $ENV{"LYRICS_DB"};
 my $xslt_dir = ($ENV{"XSLT_DIR"} or ".");
 
