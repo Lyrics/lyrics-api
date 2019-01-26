@@ -108,27 +108,22 @@ if ($artist || $album || $title) {
         exit;
     }
 
-    # Respond depending on requested format.
-    if ($format eq "xml") { # Serve plain XML
-        print $q->header(-type=>'application/xml', -charset=>'utf-8');
-        print $doc->toString();
-    } else { # Transform using an XSL file
-        $format =~ s/[^a-z\.-]//g;
-        my $xslt_path = "$xslt_dir/$format.xsl";
+    # Locate a template
+    $format =~ s/[^a-z\.-]//g;
+    # Default to xhtml.xsl if no file is found
+    $format = "xhtml" if (! -f "$xslt_dir/$format.xsl");
+    my $xslt_path = "$xslt_dir/$format.xsl";
 
-        # Default to search.xsl if no file is found
-        if (! -f $xslt_path) {
-            $xslt_path = "$xslt_dir/search.xsl";
-        }
+    # Apply a template
+    my $xslt = XML::LibXSLT->new();
+    my $template = XML::LibXML->load_xml(location => $xslt_path);
+    my $stylesheet = $xslt->parse_stylesheet($template);
+    my $result = $stylesheet->transform($doc);
 
-        # Apply a template
-        my $xslt = XML::LibXSLT->new();
-        my $template = XML::LibXML->load_xml(location => $xslt_path);
-        my $stylesheet = $xslt->parse_stylesheet($template);
-        my $result = $stylesheet->transform($doc);
-
-        print $q->header(-type=>'application/xhtml+xml',
-                         -charset=>'utf-8');
-        print $result->toString();
-    }
+    # Serve
+    my %mime_types = (xml => "application/xml", text => "text/plain");
+    print $q->header(
+        -type => ($mime_types{$format} or "application/xhtml+xml"),
+        -charset => 'utf-8');
+    print $stylesheet->output_as_bytes($result);
 }
