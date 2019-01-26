@@ -15,23 +15,49 @@
         <title>Lyrics</title>
       </head>
       <body>
-        <xsl:apply-templates select="lyrics:song" />
+        <xsl:choose>
+          <!-- Multiple matches, list them -->
+          <xsl:when test="lyrics:song[2]">
+            <ul>
+              <xsl:apply-templates select="lyrics:song" mode="listing" />
+            </ul>
+          </xsl:when>
+
+          <!-- Single match, show the lyrics -->
+          <xsl:when test="lyrics:song">
+            <xsl:apply-templates select="lyrics:song" />
+          </xsl:when>
+
+          <!-- No matches -->
+          <xsl:otherwise>
+            No matching lyrics found.
+          </xsl:otherwise>
+        </xsl:choose>
       </body>
     </html>
   </xsl:template>
 
+  <xsl:template match="lyrics:song" mode="listing">
+    <!-- TODO: add RDFa -->
+    <li>
+      <a href="{lyrics:url/text()}">
+        <xsl:copy-of select="lyrics:artist/text()" /> -
+        <xsl:copy-of select="lyrics:album/text()" /> -
+        <xsl:copy-of select="lyrics:title/text()" />
+      </a>
+    </li>
+  </xsl:template>
+
   <xsl:template match="lyrics:song">
     <!-- TODO: add RDFa -->
-    <section>
-      <h2><xsl:copy-of select="lyrics:title/text()" /></h2>
-      <p>
-        By <span><xsl:copy-of select="lyrics:artist/text()" /></span>,
-        from <span><xsl:copy-of select="lyrics:album/text()" /></span>
-      </p>
-      <pre>
-        <xsl:copy-of select="lyrics:lyrics/text()" />
-      </pre>
-    </section>
+    <h1><xsl:copy-of select="lyrics:title/text()" /></h1>
+    <p>
+      By <span><xsl:copy-of select="lyrics:artist/text()" /></span>,
+      from <span><xsl:copy-of select="lyrics:album/text()" /></span>
+    </p>
+    <pre>
+      <xsl:copy-of select="lyrics:lyrics/text()" />
+    </pre>
   </xsl:template>
 
 </xsl:stylesheet>

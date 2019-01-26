@@ -22,7 +22,7 @@ use CGI;
 use XML::LibXML;
 use XML::LibXSLT;
 use Getopt::Long;
-use 5.010;
+use URI::Escape;
 use preprocessing;
 
 my $namespace = "urn:x-lyrics";
@@ -44,10 +44,15 @@ sub song_element {
     $title_elem->appendTextNode($title);
     my $lyrics_elem = $doc->createElementNS($namespace, "lyrics");
     $lyrics_elem->appendTextNode($lyrics);
+    my $url_elem = $doc->createElementNS($namespace, "url");
+    $url_elem->appendTextNode("?artist=" . uri_escape($artist) .
+                              "&album=" . uri_escape($album) .
+                              "&title=" . uri_escape($title));
     $song->appendChild($artist_elem);
     $song->appendChild($album_elem);
     $song->appendChild($title_elem);
     $song->appendChild($lyrics_elem);
+    $song->appendChild($url_elem);
     return $song;
 }
 
