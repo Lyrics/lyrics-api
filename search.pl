@@ -88,8 +88,7 @@ if ($artist || $album || $title) {
 
     my $sth = $dbh->prepare(
         "select artist,album,title,text from lyrics where " .
-        join(" and ", @conditions) .
-        " limit 10");
+        join(" and ", @conditions));
     my $rv = $sth->execute(@parameters)
         or die $DBI::errstr;
 
