@@ -21,7 +21,6 @@ use DBI;
 use CGI;
 use XML::LibXML;
 use XML::LibXSLT;
-use Getopt::Long;
 use URI::Escape;
 use preprocessing;
 
