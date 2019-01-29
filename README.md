@@ -25,7 +25,11 @@ The example uses the lyrics repo cloned into your $HOME.
 
 Then you can run `perl -I "." lyrics-to-sqlite.pl ~/lyrics/ ./lyrics.db` from the current directory to generate the database.
 
-After the database is generated, you can try searching for Six Shooter by Coyote Kisses via `REQUEST_METHOD="GET" QUERY_STRING="title=six shooter&album=six shooter&artist=coyote kissesz" perl search.pl`
+After the database is generated, you can try searching for Six Shooter by Coyote Kisses via
+```
+REQUEST_METHOD="GET" QUERY_STRING="title=six shooter&album=six shooter&artist=coyote kissesz" perl -I "." search.pl
+```
+
 Using only partial information like 'artist=coyote' will also get you a result, as the search method is quite flexible.
 
 Now you may want to set up a webserver, here's an example server block for nginx. It assumes the repo with db file cloned into /var/www/html/.  
