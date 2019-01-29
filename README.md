@@ -23,13 +23,12 @@ For Arch Linux you will need the following packages: `perl-dbd-sqlite` (which al
 
 The example uses the lyrics repo cloned into your $HOME.
 
-Then you can run `perl -I "." lyrics-to-sqlite.pl ~/lyrics/ ./lyrics.db` from the current directory to generate the database.
+Then you can run `perl -I "." lyrics-to-sqlite.pl ~/lyrics/database ./lyrics.db` from the current directory to generate the database.
 
-After the database is generated, you can try searching for Six Shooter by Coyote Kisses via
+After the database is generated, you can try searching for Six Shooter by Coyote Kisses via 
 ```
-REQUEST_METHOD="GET" QUERY_STRING="title=six shooter&album=six shooter&artist=coyote kisses" perl -I "." search.pl
+XSLT_DIR="./format" LYRICS_DB="./lyrics.db" REQUEST_METHOD="GET" QUERY_STRING="title=six shooter&album=six shooter&artist=coyote kisses" perl -I "." search.pl
 ```
-
 Using only partial information like 'artist=coyote' will also get you a result, as the search method is quite flexible.
 
 Now you may want to set up a webserver, here's an example server block for nginx. It assumes the repo with db file cloned into /var/www/html/.  
@@ -47,6 +46,9 @@ It also assumes that FCGI server is up and running:
 			fastcgi_intercept_errors on;
 			include /etc/nginx/fastcgi_params;
 			fastcgi_param SCRIPT_FILENAME /var/www/html/lyrics-api/search.pl;
+			fastcgi_param PERL5LIB "/var/www/html/lyrics-api/";
+			fastcgi_param LYRICS_DB "/var/www/html/lyrics-api/lyrics.db";
+			fastcgi_param XSLT_DIR "/var/www/html/lyrics-api/format";
 			fastcgi_pass unix:/var/run/fcgiwrap.sock;
 		}
 }
