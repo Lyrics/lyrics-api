@@ -27,7 +27,7 @@ Then you can run `perl -I "." lyrics-to-sqlite.pl ~/lyrics/ ./lyrics.db` from th
 
 After the database is generated, you can try searching for Six Shooter by Coyote Kisses via
 ```
-REQUEST_METHOD="GET" QUERY_STRING="title=six shooter&album=six shooter&artist=coyote kissesz" perl -I "." search.pl
+REQUEST_METHOD="GET" QUERY_STRING="title=six shooter&album=six shooter&artist=coyote kisses" perl -I "." search.pl
 ```
 
 Using only partial information like 'artist=coyote' will also get you a result, as the search method is quite flexible.
