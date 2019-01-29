@@ -22,11 +22,12 @@ use CGI;
 use XML::LibXML;
 use XML::LibXSLT;
 use URI::Escape;
-use preprocessing;
+use File::ShareDir 'dist_dir';
+use LyricsDB::Preprocessing;
 
 my $namespace = "urn:x-lyrics";
 my $database = $ENV{"LYRICS_DB"};
-my $xslt_dir = ($ENV{"XSLT_DIR"} or ".");
+my $xslt_dir = ($ENV{"XSLT_DIR"} or (dist_dir('LyricsDB') . "/format"));
 
 die "The LYRICS_DB environment variable is not set"
     unless ($database);

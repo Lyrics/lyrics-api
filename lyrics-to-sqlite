@@ -19,7 +19,7 @@
 use strict;
 use DBI;
 use File::Basename;
-use preprocessing;
+use LyricsDB::Preprocessing;
 
 die "Usage: lyrics-to-sqlite.pl <database directory> <sqlite db file>"
     unless ($#ARGV >= 1);

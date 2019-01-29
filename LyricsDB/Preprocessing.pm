@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+package LyricsDB::Preprocessing 0.01;
+
 use Text::Unidecode;
 use base 'Exporter';
-our @EXPORT_OK = ('preprocess');
+our @EXPORT = ('preprocess');
 
 sub preprocess {
     my $str = shift @_;
