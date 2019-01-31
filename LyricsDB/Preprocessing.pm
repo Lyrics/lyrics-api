@@ -22,10 +22,16 @@ our @EXPORT = ('preprocess');
 
 sub preprocess {
     my $str = shift @_;
+    my %aliases;
+    $aliases{'original'} = $str;
     # remove trailing marks
     $str =~ s/(\(|feat\.|ft\.).*$//g;
+    $aliases{'no_marks'} = $str;
     # filter alphanumeric characters
     $str =~ s/[^\p{Alpha}\p{Number}]//g;
+    $aliases{'no_marks+alphanum'} = $str;
     # encode as ASCII, lower-case
-    return lc(unidecode $str);
+    $str = lc(unidecode $str);
+    $aliases{'no_marks+alphanum+unidecode+lc'} = $str;
+    return %aliases;
 }

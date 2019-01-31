@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use strict;
+use warnings;
 use DBI;
 use CGI;
 use XML::LibXML;
@@ -60,8 +61,19 @@ my $q = CGI->new;
 my $artist = $q->param('artist');
 my $album = $q->param('album');
 my $title = $q->param('title');
-my $format = $q->param('format');
+my $format = ($q->param('format') or "xhtml");
 my $errors = $q->param('errors');
+
+sub add_alias_conditions {
+    my ($conditions, $column, $original) = @_;
+    return unless $original;
+    my $q = "lyrics_id in (select lyrics_id from aliases where " .
+        "alias_column = '$column' and (alias = ? or " .
+        "(alias = ? and alias_type='no_marks+alphanum+unidecode+lc')" .
+        "))";
+    my %aliases = preprocess($original);
+    $conditions->{$q} = [$original, $aliases{"no_marks+alphanum+unidecode+lc"}];
+}
 
 if ($artist || $album || $title) {
     # TODO: would be nice to open the database in read-only mode.
@@ -70,26 +82,15 @@ if ($artist || $album || $title) {
     my $dbh = DBI->connect("DBI:SQLite:dbname=$database", "", "")
         or die $DBI::errstr;
 
-    my @conditions;
-    my @parameters;
-    if ($artist) {
-        push @conditions, "search_artist = ?";
-        push @parameters, preprocess($artist);
-    }
-    if ($album) {
-        push @conditions, "search_album = ?";
-        push @parameters, preprocess($album);
-    }
-    if ($title) {
-        push @conditions, "search_title = ?";
-        push @parameters, preprocess($title);
-    }
-
+    my %conditions;
+    add_alias_conditions(\%conditions, 'artist', $artist);
+    add_alias_conditions(\%conditions, 'album', $album);
+    add_alias_conditions(\%conditions, 'title', $title);
     my $sth = $dbh->prepare(
         "select artist, album, title, text from lyrics where " .
-        join(" and ", @conditions) .
+        join(" and ", keys %conditions) .
         " order by artist, album, title");
-    my $rv = $sth->execute(@parameters)
+    my $rv = $sth->execute(map {@$_} (values %conditions))
         or die $DBI::errstr;
 
     # Compose an XML document out of the query results

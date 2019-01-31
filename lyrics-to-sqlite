@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use strict;
+use warnings;
 use DBI;
 use File::Basename;
 use LyricsDB::Preprocessing;
@@ -30,32 +31,52 @@ die "The database file already exists" if (-f $database);
 
 my $dbh = DBI->connect("DBI:SQLite:dbname=$database", "", "")
     or die $DBI::errstr;
+$dbh->begin_work;
 
 $dbh->do(q(
          CREATE TABLE lyrics (
-         search_artist text NOT NULL,
-         search_album text NOT NULL,
-         search_title text NOT NULL,
-         artist text NOT NULL,
-         album text NOT NULL,
-         title text NOT NULL,
-         text text NOT NULL
+         lyrics_id INTEGER PRIMARY KEY,
+         artist TEXT NOT NULL,
+         album TEXT NOT NULL,
+         title TEXT NOT NULL,
+         text TEXT NOT NULL
          )));
-my $insert_q = $dbh->prepare("INSERT INTO lyrics VALUES (?, ?, ?, ?, ?, ?, ?)");
+$dbh->do(q(
+         CREATE TABLE aliases (
+         lyrics_id INTEGER NOT NULL,
+         alias TEXT NOT NULL,
+         alias_column TEXT NOT NULL,
+         alias_type TEXT NOT NULL,
+         FOREIGN KEY (lyrics_id) REFERENCES lyrics(lyrics_id)
+         )));
+my $insert_q = $dbh->prepare(
+    "INSERT INTO lyrics (artist, album, title, text) VALUES (?, ?, ?, ?)");
+my $alias_q = $dbh->prepare("INSERT INTO aliases VALUES (?, ?, ?, ?)");
+
+sub add_aliases {
+    my ($lyrics_id, $alias_column, $original) = @_;
+    my %aliases = preprocess($original);
+    for my $alias_type (keys %aliases) {
+        $alias_q->execute($lyrics_id,
+                          $aliases{$alias_type},
+                          $alias_column,
+                          $alias_type);
+    }
+}
 
 for my $path (glob("$dirname/*/*/*/*")) {
-    my $song = basename $path;
+    my $title = basename $path;
     my $album = basename(dirname $path);
     my $artist = basename(dirname(dirname $path));
     my $lyrics = do { local( @ARGV, $/ ) = $path; <> };
-    $insert_q->execute(preprocess($artist), preprocess($album),
-                       preprocess($song), $artist, $album, $song, $lyrics);
+    $insert_q->execute($artist, $album, $title, $lyrics);
+    my $lyrics_id = $dbh->last_insert_id("", "", "", "");
+    add_aliases($lyrics_id, 'artist', $artist);
+    add_aliases($lyrics_id, 'album', $album);
+    add_aliases($lyrics_id, 'title', $title);
 }
 
-$dbh->do("CREATE INDEX idx_artist on lyrics (search_artist)");
-$dbh->do("CREATE INDEX idx_album on lyrics (search_album)");
-$dbh->do("CREATE INDEX idx_title on lyrics (search_title)");
-# compound indexes (add more?)
-$dbh->do("CREATE INDEX idx_artist_title on lyrics (search_artist, search_title)");
+$dbh->do("CREATE INDEX idx_aliases_column ON aliases (alias_column, alias)");
 
+$dbh->commit;
 $dbh->disconnect();

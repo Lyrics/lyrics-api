@@ -70,11 +70,21 @@ It also assumes that FCGI server is up and running:
 ```
 You should be able to load Six Shooter now via https://lyrics.example.com/?title=six%20shooter
 
+
 ## Web interface
 
 The following parameters are recognized:
 
 - `artist`, `album`, `title`: search filters.
 - `errors=on`: throw error 404 in case if nothing is found.
-- `format={xhtml,text,xml}`: a stylesheet (from `XSLT_DIR` or the
-  default data directory) to use.
+- `format`: a stylesheet (from `XSLT_DIR` or the default data
+  directory) to use. The primary ones are `xhtml`, `text`, `xml`;
+  others are provided to mimic other services' interfaces.
+
+
+## Database
+
+The generated database is intended to be reusable. Query preprocessing
+is used to deal with slightly different spellings and marks such as
+"(live)", but different tagged aliases are stored, allowing to work
+with limited (or no) processing.
