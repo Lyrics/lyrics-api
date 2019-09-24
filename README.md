@@ -21,7 +21,7 @@ SQLite3, a Perl interpreter, and the following modules are required:
 `URI::Escape`, `File::Basename`, `Text::Unidecode`, `File::ShareDir`,
 `File::ShareDir::Install`, `ExtUtils::MakeMaker`.
 
-For Arch Linux you will need the following packages: `perl-dbd-sqlite` (which also pulls the needed `perl-dbi`), `perl-cgi`, `perl-xml-libxml`, `perl-xml-libxslt` and `perl-text-unidecode` from AUR. (TODO: add MakeMaker and ShareDir packages)
+For Arch Linux you will need the following packages: `perl-dbd-sqlite` (which also pulls the needed `perl-dbi`), `perl-cgi`, `perl-xml-libxml`, `perl-xml-libxslt`, `perl-file-sharedir-install` and `perl-text-unidecode` from AUR. (TODO: add MakeMaker)
 
 
 ## Installation
@@ -46,7 +46,7 @@ After the database is generated, you can try searching for Six Shooter by Coyote
 LYRICS_DB="./lyrics.db" REQUEST_METHOD="GET" QUERY_STRING="title=six shooter&album=six shooter&artist=coyote kisses" lyrics-web
 ```
 
-Now you may want to set up a webserver, here's an example server block for nginx. It assumes the repo with db file cloned into /var/www/html/.  
+Now you may want to set up a webserver, here's an example server block for nginx. It assumes the repo with db file cloned into /var/www/html/.
 It also assumes that FCGI server is up and running:
 
 ```
