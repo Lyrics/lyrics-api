@@ -21,7 +21,7 @@ SQLite3, a Perl interpreter, and the following modules are required:
 `URI::Escape`, `File::Basename`, `Text::Unidecode`, `File::ShareDir`,
 `File::ShareDir::Install`, `ExtUtils::MakeMaker`.
 
-For Arch Linux you will need the following packages: `perl-dbd-sqlite` (which also pulls the needed `perl-dbi`), `perl-cgi`, `perl-xml-libxml`, `perl-xml-libxslt`, `perl-file-sharedir-install` and `perl-text-unidecode` from AUR. (TODO: add MakeMaker)
+For Arch Linux you will need the following packages: `perl-dbd-sqlite` (which also pulls the needed `perl-dbi`), `perl-cgi`, `perl-xml-libxml`, `perl-xml-libxslt`, `perl-file-sharedir`, `perl-file-sharedir-install` and `perl-text-unidecode` from AUR. (TODO: add MakeMaker)
 
 
 ## Installation
